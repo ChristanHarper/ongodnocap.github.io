@@ -86,33 +86,59 @@
   </div>
 </footer>
 
-<script src="js/data.js"></script>
 <script src="js/app.js"></script>
-<script>
-  const cfg = OGNC.getConfig();
+<script type="module">
+  import { OGNC } from "./js/data.js";
 
-  document.getElementById("admin-form").addEventListener("submit", (e) => {
+  const adminForm = document.getElementById("admin-form");
+  const renterForm = document.getElementById("renter-form");
+  const adminBtn = adminForm.querySelector("button[type=submit]");
+  const renterBtn = renterForm.querySelector("button[type=submit]");
+
+  adminForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const val = document.getElementById("admin-pass").value;
     const err = document.getElementById("admin-error");
-    if (val === cfg.adminPassword) {
-      OGNC_AUTH.setAdmin(true);
-      window.location.href = "admin.html";
-    } else {
-      err.textContent = "That's not it. Try again.";
+    err.textContent = "";
+    adminBtn.disabled = true;
+    adminBtn.textContent = "Checking…";
+    try {
+      const cfg = await OGNC.getConfig();
+      if (val === cfg.adminPassword) {
+        OGNC_AUTH.setAdmin(true);
+        window.location.href = "admin.html";
+        return;
+      } else {
+        err.textContent = "That's not it. Try again.";
+      }
+    } catch (e2) {
+      err.textContent = "Couldn't reach the server. Check your connection and try again.";
     }
+    adminBtn.disabled = false;
+    adminBtn.textContent = "Enter Console";
   });
 
-  document.getElementById("renter-form").addEventListener("submit", (e) => {
+  renterForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const val = document.getElementById("renter-pass").value;
     const err = document.getElementById("renter-error");
-    if (val === cfg.renterPassword) {
-      OGNC_AUTH.setRenter(true);
-      window.location.href = "renter.html";
-    } else {
-      err.textContent = "That's not it. Try again.";
+    err.textContent = "";
+    renterBtn.disabled = true;
+    renterBtn.textContent = "Checking…";
+    try {
+      const cfg = await OGNC.getConfig();
+      if (val === cfg.renterPassword) {
+        OGNC_AUTH.setRenter(true);
+        window.location.href = "renter.html";
+        return;
+      } else {
+        err.textContent = "That's not it. Try again.";
+      }
+    } catch (e2) {
+      err.textContent = "Couldn't reach the server. Check your connection and try again.";
     }
+    renterBtn.disabled = false;
+    renterBtn.textContent = "View Payment History";
   });
 </script>
 
