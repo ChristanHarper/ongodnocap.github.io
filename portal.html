@@ -3,11 +3,26 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Rental Portal — On God No Capital Investments</title>
+<title>Rental Portal. On God No Capital Investments.</title>
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+
+<div class="utility-bar">
+  <div class="frame">
+    <span class="confidential">Private &amp; Confidential</span>
+    <a href="index.html">Firm Overview</a>
+  </div>
+</div>
+
+<div class="filing-strip">
+  <div class="frame">
+    <span class="filing-ref">Doc. Ref. <strong>OGNC-2026-0804</strong></span>
+    <span>Portal Access</span>
+    <span>Two Authorized Roles</span>
+  </div>
+</div>
 
 <header class="site-header">
   <div class="frame">
@@ -22,8 +37,8 @@
       <div class="brand-name">On God No Capital<small>A Private Residential Capital Group</small></div>
     </div>
     <nav class="site-nav">
-      <a href="index.html">Home</a>
-      <a href="index.html#divisions">Divisions</a>
+      <a href="index.html">Overview</a>
+      <a href="index.html#holdings">Holdings</a>
       <a href="portal.html" class="active">Rental Portal</a>
     </nav>
   </div>
@@ -32,10 +47,11 @@
 <main class="portal-wrap">
   <div class="frame">
     <div class="portal-head">
-      <span class="eyebrow">Investor &amp; Tenant Relations</span>
-      <h2 style="font-size: 34px; margin-top: 12px;">Choose your access</h2>
-      <p style="color: var(--ivory-dim); font-size: 18px; margin-top: 12px;">
-        Administrators confirm what's been paid. Tenants review their own history.
+      <span class="eyebrow">Investor &amp; Resident Relations</span>
+      <h2 style="font-size: 32px; margin-top: 12px;">Select your access level</h2>
+      <p style="color: var(--ivory-dim); font-size: 17px; margin-top: 12px;">
+        Two roles are authorized to access the ledger. Administrators confirm rent
+        received. Residents review their own payment history.
       </p>
     </div>
 
@@ -43,11 +59,12 @@
       <div class="portal-col portal-col--admin">
         <span class="eyebrow">Firm Access</span>
         <h3>Administrator</h3>
-        <p class="desc">For Brandon. Confirm rent received, manage the ledger, keep the firm running.</p>
+        <p class="desc">Confirm rent received, maintain the ledger, and manage firm
+        settings.</p>
         <form id="admin-form" autocomplete="off">
           <div class="field">
             <label for="admin-pass">Administrator password</label>
-            <input type="password" id="admin-pass" placeholder="••••••••" required>
+            <input type="password" id="admin-pass" placeholder="Enter password" required>
           </div>
           <div class="form-error" id="admin-error"></div>
           <button type="submit" class="btn">Enter Console</button>
@@ -55,13 +72,14 @@
       </div>
 
       <div class="portal-col portal-col--tenant">
-        <span class="eyebrow">Tenant Access</span>
-        <h3>Renter</h3>
-        <p class="desc">Review your full payment history and print a clean record any time you need one.</p>
+        <span class="eyebrow">Resident Access</span>
+        <h3>Tenant</h3>
+        <p class="desc">Review your complete payment history and generate a printed
+        record at any time.</p>
         <form id="renter-form" autocomplete="off">
           <div class="field">
-            <label for="renter-pass">Tenant password</label>
-            <input type="password" id="renter-pass" placeholder="••••••••" required>
+            <label for="renter-pass">Resident password</label>
+            <input type="password" id="renter-pass" placeholder="Enter password" required>
           </div>
           <div class="form-error" id="renter-error"></div>
           <button type="submit" class="btn btn--blood">View Payment History</button>
@@ -69,20 +87,44 @@
       </div>
     </div>
 
-    <p class="small-caps-note" style="text-align:center; margin-top: 28px;">
-      First time here? Passwords are set up by the administrator — see the README in the project
-      repository for the defaults.
+    <p class="small-caps-note" style="margin-top: 26px;">
+      Passwords are issued by the Firm's Administrator. See the project documentation for
+      current credentials.
     </p>
   </div>
 </main>
 
 <footer class="site-footer">
   <div class="frame">
-    <div class="footer-note">
-      On God No Capital Investments is not a registered investment advisor, broker-dealer, bank,
-      or landlord‑tenant attorney. It is one guy (Brandon) renting a room to his friend.
+    <div class="footer-grid">
+      <div class="footer-col">
+        <span class="eyebrow">On God No Capital Investments</span>
+        <p class="footer-legal" style="margin-top: 14px; max-width: 42ch;">
+          A private residential capital group. Organized under the direct management of a
+          single Managing Member for the purpose of leasing one residential room.
+        </p>
+      </div>
+      <div class="footer-col">
+        <span class="eyebrow">Access</span>
+        <ul>
+          <li><a href="index.html">Firm Overview</a></li>
+          <li><a href="index.html#holdings">Holdings</a></li>
+          <li><a href="portal.html">Rental Portal</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <span class="eyebrow">Disclosures</span>
+        <p class="footer-legal">
+          On God No Capital Investments is not a registered investment adviser,
+          broker-dealer, depository institution, or licensed real estate brokerage. It is
+          a private lease arrangement between two individuals for one residential room.
+        </p>
+      </div>
     </div>
-    <div class="footer-mark">Est. on a handshake, not a filing.</div>
+    <div class="footer-bottom">
+      <span>On God No Capital Investments. All rights reserved.</span>
+      <span>Confidential. For intended recipient only.</span>
+    </div>
   </div>
 </footer>
 
@@ -101,7 +143,7 @@
     const err = document.getElementById("admin-error");
     err.textContent = "";
     adminBtn.disabled = true;
-    adminBtn.textContent = "Checking…";
+    adminBtn.textContent = "Checking";
     try {
       const cfg = await OGNC.getConfig();
       if (val === cfg.adminPassword) {
@@ -109,10 +151,10 @@
         window.location.href = "admin.html";
         return;
       } else {
-        err.textContent = "That's not it. Try again.";
+        err.textContent = "That is not correct. Try again.";
       }
     } catch (e2) {
-      err.textContent = "Couldn't reach the server. Check your connection and try again.";
+      err.textContent = "Could not reach the server. Check your connection and try again.";
     }
     adminBtn.disabled = false;
     adminBtn.textContent = "Enter Console";
@@ -124,7 +166,7 @@
     const err = document.getElementById("renter-error");
     err.textContent = "";
     renterBtn.disabled = true;
-    renterBtn.textContent = "Checking…";
+    renterBtn.textContent = "Checking";
     try {
       const cfg = await OGNC.getConfig();
       if (val === cfg.renterPassword) {
@@ -132,10 +174,10 @@
         window.location.href = "renter.html";
         return;
       } else {
-        err.textContent = "That's not it. Try again.";
+        err.textContent = "That is not correct. Try again.";
       }
     } catch (e2) {
-      err.textContent = "Couldn't reach the server. Check your connection and try again.";
+      err.textContent = "Could not reach the server. Check your connection and try again.";
     }
     renterBtn.disabled = false;
     renterBtn.textContent = "View Payment History";

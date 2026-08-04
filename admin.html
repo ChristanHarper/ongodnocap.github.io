@@ -3,13 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Administrator Console — On God No Capital Investments</title>
+<title>Administrator Console. On God No Capital Investments.</title>
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-<!-- login gate, shown until the admin password is entered this session -->
 <div class="gate" id="gate">
   <div class="gate-card">
     <svg class="seal" width="66" height="66" viewBox="0 0 100 100" fill="none">
@@ -19,20 +18,35 @@
       <text x="50" y="61" text-anchor="middle" font-family="Courier Prime, monospace" font-size="6" letter-spacing="1.5" fill="#a89c86">ADMINISTRATOR</text>
     </svg>
     <h2>Administrator Console</h2>
-    <p class="desc">Restricted to firm leadership. That's you, Brandon.</p>
+    <p class="desc">Restricted to authorized firm personnel.</p>
     <form id="gate-form" autocomplete="off">
       <div class="field">
         <label for="gate-pass">Administrator password</label>
-        <input type="password" id="gate-pass" placeholder="••••••••" required>
+        <input type="password" id="gate-pass" placeholder="Enter password" required>
       </div>
       <div class="form-error" id="gate-error"></div>
       <button type="submit" class="btn">Enter Console</button>
     </form>
-    <a href="portal.html" class="gate-back">← Back to portal</a>
+    <a href="portal.html" class="gate-back">Back to portal</a>
   </div>
 </div>
 
 <div id="app" style="display:none;">
+
+<div class="utility-bar">
+  <div class="frame">
+    <span class="confidential">Private &amp; Confidential</span>
+    <a href="index.html">Firm Overview</a>
+  </div>
+</div>
+
+<div class="filing-strip">
+  <div class="frame">
+    <span class="filing-ref">Doc. Ref. <strong>OGNC-2026-0804</strong></span>
+    <span>Administrator Console</span>
+    <span>Internal Use Only</span>
+  </div>
+</div>
 
 <header class="site-header">
   <div class="frame">
@@ -47,7 +61,7 @@
       <div class="brand-name">On God No Capital<small>A Private Residential Capital Group</small></div>
     </div>
     <nav class="site-nav">
-      <a href="index.html">Home</a>
+      <a href="index.html">Overview</a>
       <a href="portal.html">Portal</a>
       <a href="#" id="logout-link">Log Out</a>
     </nav>
@@ -63,11 +77,12 @@
         <h1 id="welcome-heading">Welcome back</h1>
       </div>
       <div class="dash-actions">
-        <button class="btn btn--ghost" id="add-month-btn">Add Next Month's Charge</button>
+        <button class="btn btn--ghost" id="quick-add-btn">Add Next Period</button>
+        <button class="btn" id="custom-add-btn">Add Charge</button>
       </div>
     </div>
 
-    <div class="stat-row">
+    <div class="stat-strip" style="margin-bottom: 34px;">
       <div class="stat">
         <span class="eyebrow">Total Collected</span>
         <div class="value" id="stat-total">$0.00</div>
@@ -79,6 +94,10 @@
       <div class="stat">
         <span class="eyebrow">Pending Charges</span>
         <div class="value blood" id="stat-pending">0</div>
+      </div>
+      <div class="stat">
+        <span class="eyebrow">Periods on Record</span>
+        <div class="value" id="stat-total-periods">0</div>
       </div>
     </div>
 
@@ -100,19 +119,19 @@
         <form id="settings-form">
           <div class="settings-grid">
             <div class="field">
-              <label for="s-tenant">Tenant name</label>
+              <label for="s-tenant">Resident name</label>
               <input type="text" id="s-tenant" required>
             </div>
             <div class="field">
-              <label for="s-landlord">Landlord name</label>
+              <label for="s-landlord">Managing member name</label>
               <input type="text" id="s-landlord" required>
             </div>
             <div class="field">
-              <label for="s-property">Property / asset label</label>
+              <label for="s-property">Asset label</label>
               <input type="text" id="s-property" required>
             </div>
             <div class="field">
-              <label for="s-rent">Monthly rent ($)</label>
+              <label for="s-rent">Base rent, monthly</label>
               <input type="number" id="s-rent" min="0" step="1" required>
             </div>
             <div class="field">
@@ -124,7 +143,7 @@
               <input type="text" id="s-adminpass" required>
             </div>
             <div class="field">
-              <label for="s-renterpass">Tenant password</label>
+              <label for="s-renterpass">Resident password</label>
               <input type="text" id="s-renterpass" required>
             </div>
           </div>
@@ -141,11 +160,33 @@
 
 <footer class="site-footer">
   <div class="frame">
-    <div class="footer-note">
-      Administrator changes here affect what the tenant can see in their own portal. Be honest —
-      it's just Brandon on the other end of this anyway.
+    <div class="footer-grid">
+      <div class="footer-col">
+        <span class="eyebrow">On God No Capital Investments</span>
+        <p class="footer-legal" style="margin-top: 14px; max-width: 42ch;">
+          Changes made in Firm Settings apply immediately across both the Administrator
+          Console and the Tenant Portal.
+        </p>
+      </div>
+      <div class="footer-col">
+        <span class="eyebrow">Access</span>
+        <ul>
+          <li><a href="index.html">Firm Overview</a></li>
+          <li><a href="portal.html">Rental Portal</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <span class="eyebrow">Disclosures</span>
+        <p class="footer-legal">
+          Ledger entries recorded here are visible to the resident through the Tenant
+          Portal. Records should be kept accurate and current.
+        </p>
+      </div>
     </div>
-    <div class="footer-mark">Est. on a handshake, not a filing.</div>
+    <div class="footer-bottom">
+      <span>On God No Capital Investments. All rights reserved.</span>
+      <span>Confidential. For intended recipient only.</span>
+    </div>
   </div>
 </footer>
 

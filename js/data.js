@@ -1,226 +1,264 @@
 /* ==========================================================================
-   ON GOD NO CAPITAL INVESTMENTS — data layer
-   Everything lives in the browser's localStorage. There is no server.
-   This is a private joke site for two friends, not a real financial
-   product — passwords below are plain-text convenience locks, not security.
+   ON GOD NO CAPITAL INVESTMENTS. Data layer. Firestore-backed.
+   Config lives at ognc_meta/config. Charges live in the ognc_payments
+   collection, one document per billing period. Reads are open. Writes
+   require anonymous auth (see firebase.js for what that does and does
+   not protect).
    ========================================================================== */
 
-const OGNC = (() => {
-  const CONFIG_KEY = "ognc_config_v1";
-  const PAYMENTS_KEY = "ognc_payments_v1";
+import { db, authReady } from "./firebase.js";
+import {
+  doc, getDoc, setDoc, updateDoc, deleteDoc,
+  collection, getDocs, onSnapshot, query, orderBy,
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  const DEFAULT_CONFIG = {
-    tenantName: "The Tenant",
-    propertyLabel: "The Room — Primary Residence",
-    rentAmount: 650,
-    dueDay: 1,
-    adminPassword: "scarface",
-    renterPassword: "nocap",
-    landlordName: "Brandon",
-  };
+const CONFIG_DOC = doc(db, "ognc_meta", "config");
+const PAYMENTS_COL = collection(db, "ognc_payments");
 
-  const MONTHS = ["January","February","March","April","May","June","July",
-    "August","September","October","November","December"];
+const DEFAULT_CONFIG = {
+  tenantName: "The Tenant",
+  propertyLabel: "The Room, Primary Residence",
+  rentAmount: 650,
+  dueDay: 1,
+  adminPassword: "scarface",
+  renterPassword: "nocap",
+  landlordName: "The Administrator",
+};
 
-  function getConfig(){
-    const raw = localStorage.getItem(CONFIG_KEY);
-    if (!raw) {
-      localStorage.setItem(CONFIG_KEY, JSON.stringify(DEFAULT_CONFIG));
-      return { ...DEFAULT_CONFIG };
-    }
-    try {
-      return { ...DEFAULT_CONFIG, ...JSON.parse(raw) };
-    } catch (e) {
-      return { ...DEFAULT_CONFIG };
-    }
+const MONTHS = ["January","February","March","April","May","June","July",
+  "August","September","October","November","December"];
+
+function uid(){
+  return "p_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,8);
+}
+
+function labelFor(dueDateIso){
+  const [y, m] = dueDateIso.split("-").map(Number);
+  return `${MONTHS[m-1]} ${y}`;
+}
+
+function dueDateFor(year, monthIndex, dueDay){
+  const d = new Date(year, monthIndex, dueDay);
+  return d.toISOString().slice(0,10);
+}
+
+/* ------------------------------- config -------------------------------- */
+
+async function getConfig(){
+  await authReady;
+  let snap = await getDoc(CONFIG_DOC);
+  if (!snap.exists()) {
+    await setDoc(CONFIG_DOC, DEFAULT_CONFIG);
+    snap = await getDoc(CONFIG_DOC);
   }
+  return { ...DEFAULT_CONFIG, ...snap.data() };
+}
 
-  function saveConfig(partial){
-    const current = getConfig();
-    const next = { ...current, ...partial };
-    localStorage.setItem(CONFIG_KEY, JSON.stringify(next));
-    return next;
-  }
+async function saveConfig(partial){
+  await authReady;
+  await setDoc(CONFIG_DOC, partial, { merge: true });
+  return getConfig();
+}
 
-  function getPayments(){
-    const raw = localStorage.getItem(PAYMENTS_KEY);
-    if (!raw) return [];
-    try {
-      const list = JSON.parse(raw);
-      return Array.isArray(list) ? list : [];
-    } catch(e) {
-      return [];
-    }
-  }
-
-  function savePayments(list){
-    localStorage.setItem(PAYMENTS_KEY, JSON.stringify(list));
-  }
-
-  function uid(){
-    return "p_" + Date.now().toString(36) + "_" + Math.random().toString(36).slice(2,8);
-  }
-
-  function periodLabel(year, monthIndex){
-    return `${MONTHS[monthIndex]} ${year}`;
-  }
-
-  function dueDateFor(year, monthIndex, dueDay){
-    const d = new Date(year, monthIndex, dueDay);
-    return d.toISOString().slice(0,10);
-  }
-
-  // Seed a handful of months so the site isn't empty on first load.
-  function ensureSeeded(){
-    const existing = getPayments();
-    if (existing.length > 0) return existing;
-
-    const cfg = getConfig();
-    const now = new Date();
-    const seeded = [];
-    // three prior months paid, one on time, one late-but-paid, one right on the dot,
-    // plus the current month left pending so there's something to demo.
-    const historyOffsets = [-3, -2, -1];
-    const statuses = ["paid", "late", "paid"];
-
-    historyOffsets.forEach((offset, i) => {
-      const d = new Date(now.getFullYear(), now.getMonth() + offset, 1);
-      const year = d.getFullYear();
-      const month = d.getMonth();
-      const due = dueDateFor(year, month, cfg.dueDay);
-      const isLate = statuses[i] === "late";
-      const paidDate = new Date(year, month, cfg.dueDay + (isLate ? 6 : 0));
-      seeded.push({
-        id: uid(),
-        period: `${year}-${String(month+1).padStart(2,"0")}`,
-        label: periodLabel(year, month),
-        dueDate: due,
-        amount: cfg.rentAmount,
-        status: statuses[i],
-        paidDate: paidDate.toISOString().slice(0,10),
-        method: "Cash App",
-        confirmedBy: cfg.landlordName,
-      });
+function subscribeConfig(callback){
+  let unsub = () => {};
+  authReady.then(() => {
+    unsub = onSnapshot(CONFIG_DOC, async (snap) => {
+      if (!snap.exists()) {
+        await setDoc(CONFIG_DOC, DEFAULT_CONFIG);
+        return; // triggers this listener again with the new doc
+      }
+      callback({ ...DEFAULT_CONFIG, ...snap.data() });
     });
+  });
+  return () => unsub();
+}
 
-    // current month, still pending
-    const curDue = dueDateFor(now.getFullYear(), now.getMonth(), cfg.dueDay);
-    seeded.push({
-      id: uid(),
-      period: `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`,
-      label: periodLabel(now.getFullYear(), now.getMonth()),
-      dueDate: curDue,
+/* ------------------------------ payments -------------------------------- */
+
+async function seedDemoPayments(cfg){
+  const now = new Date();
+  const historyOffsets = [-3, -2, -1];
+  const statuses = ["paid", "late", "paid"];
+  const writes = [];
+
+  historyOffsets.forEach((offset, i) => {
+    const d = new Date(now.getFullYear(), now.getMonth() + offset, 1);
+    const year = d.getFullYear();
+    const month = d.getMonth();
+    const due = dueDateFor(year, month, cfg.dueDay);
+    const isLate = statuses[i] === "late";
+    const paidDate = new Date(year, month, cfg.dueDay + (isLate ? 6 : 0));
+    writes.push(setDoc(doc(db, "ognc_payments", uid()), {
+      label: labelFor(due),
+      dueDate: due,
       amount: cfg.rentAmount,
-      status: "pending",
-      paidDate: null,
-      method: "",
-      confirmedBy: "",
-    });
-
-    savePayments(seeded);
-    return seeded;
-  }
-
-  function addNextPeriod(){
-    const cfg = getConfig();
-    const payments = getPayments();
-    let year, month;
-    if (payments.length === 0) {
-      const now = new Date();
-      year = now.getFullYear();
-      month = now.getMonth();
-    } else {
-      const sorted = [...payments].sort((a,b) => a.period.localeCompare(b.period));
-      const last = sorted[sorted.length - 1];
-      const [ly, lm] = last.period.split("-").map(Number);
-      const d = new Date(ly, lm - 1 + 1, 1); // next month after last
-      year = d.getFullYear();
-      month = d.getMonth();
-    }
-    const period = `${year}-${String(month+1).padStart(2,"0")}`;
-    if (payments.some(p => p.period === period)) return payments;
-
-    payments.push({
-      id: uid(),
-      period,
-      label: periodLabel(year, month),
-      dueDate: dueDateFor(year, month, cfg.dueDay),
-      amount: cfg.rentAmount,
-      status: "pending",
-      paidDate: null,
-      method: "",
-      confirmedBy: "",
-    });
-    savePayments(payments);
-    return payments;
-  }
-
-  function markPaid(id, { method = "", paidDate = null } = {}){
-    const cfg = getConfig();
-    const payments = getPayments();
-    const idx = payments.findIndex(p => p.id === id);
-    if (idx === -1) return payments;
-
-    const record = payments[idx];
-    const paid = paidDate || new Date().toISOString().slice(0,10);
-    const late = new Date(paid) > new Date(record.dueDate + "T23:59:59");
-
-    payments[idx] = {
-      ...record,
-      status: late ? "late" : "paid",
-      paidDate: paid,
-      method: method || record.method || "Confirmed in person",
+      status: statuses[i],
+      paidDate: paidDate.toISOString().slice(0,10),
+      method: "Cash App",
       confirmedBy: cfg.landlordName,
-    };
-    savePayments(payments);
-    return payments;
-  }
+    }));
+  });
 
-  function undoPayment(id){
-    const payments = getPayments();
-    const idx = payments.findIndex(p => p.id === id);
-    if (idx === -1) return payments;
-    payments[idx] = {
-      ...payments[idx],
-      status: "pending",
-      paidDate: null,
-      method: "",
-      confirmedBy: "",
-    };
-    savePayments(payments);
-    return payments;
-  }
+  const curDue = dueDateFor(now.getFullYear(), now.getMonth(), cfg.dueDay);
+  writes.push(setDoc(doc(db, "ognc_payments", uid()), {
+    label: labelFor(curDue),
+    dueDate: curDue,
+    amount: cfg.rentAmount,
+    status: "pending",
+    paidDate: null,
+    method: "",
+    confirmedBy: "",
+  }));
 
-  function deletePeriod(id){
-    const payments = getPayments().filter(p => p.id !== id);
-    savePayments(payments);
-    return payments;
-  }
+  await Promise.all(writes);
+}
 
-  function computeStats(payments){
-    const settled = payments.filter(p => p.status === "paid" || p.status === "late");
-    const totalPaid = settled.reduce((sum, p) => sum + Number(p.amount || 0), 0);
-    const onTime = settled.filter(p => p.status === "paid").length;
-    const onTimeRate = settled.length ? Math.round((onTime / settled.length) * 100) : 100;
-    const pendingCount = payments.filter(p => p.status === "pending").length;
-    return { totalPaid, onTimeRate, settledCount: settled.length, pendingCount };
+async function getPayments(){
+  await authReady;
+  const snap = await getDocs(query(PAYMENTS_COL, orderBy("dueDate", "desc")));
+  if (snap.empty) {
+    const cfg = await getConfig();
+    await seedDemoPayments(cfg);
+    const reSnap = await getDocs(query(PAYMENTS_COL, orderBy("dueDate", "desc")));
+    return reSnap.docs.map(d => ({ id: d.id, ...d.data() }));
   }
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
 
-  function formatMoney(n){
-    return "$" + Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+function subscribePayments(callback){
+  let unsub = () => {};
+  let seeding = false;
+  authReady.then(() => {
+    const q = query(PAYMENTS_COL, orderBy("dueDate", "desc"));
+    unsub = onSnapshot(q, async (snap) => {
+      if (snap.empty && !seeding) {
+        seeding = true;
+        const cfg = await getConfig();
+        await seedDemoPayments(cfg);
+        seeding = false;
+        return; // triggers this listener again with the seeded docs
+      }
+      callback(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    });
+  });
+  return () => unsub();
+}
+
+// Add a charge with any due date and amount. This is the general-purpose
+// entry point; addNextPeriod() below is just a convenience wrapper around it.
+async function addCharge({ label, dueDate, amount }){
+  await authReady;
+  const id = uid();
+  await setDoc(doc(db, "ognc_payments", id), {
+    label: label && label.trim() ? label.trim() : labelFor(dueDate),
+    dueDate,
+    amount: Number(amount) || 0,
+    status: "pending",
+    paidDate: null,
+    method: "",
+    confirmedBy: "",
+  });
+  return id;
+}
+
+async function addNextPeriod(){
+  await authReady;
+  const cfg = await getConfig();
+  const payments = await getPayments();
+
+  let year, month;
+  if (payments.length === 0) {
+    const now = new Date();
+    year = now.getFullYear();
+    month = now.getMonth();
+  } else {
+    const sorted = [...payments].sort((a,b) => a.dueDate.localeCompare(b.dueDate));
+    const last = sorted[sorted.length - 1];
+    const [ly, lm] = last.dueDate.split("-").map(Number);
+    const d = new Date(ly, lm - 1 + 1, 1);
+    year = d.getFullYear();
+    month = d.getMonth();
   }
+  const dueDate = dueDateFor(year, month, cfg.dueDay);
+  await addCharge({ label: labelFor(dueDate), dueDate, amount: cfg.rentAmount });
+}
 
-  function formatDate(iso){
-    if (!iso) return "—";
-    const [y,m,d] = iso.split("-").map(Number);
-    const dt = new Date(y, m-1, d);
-    return dt.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
-  }
+// Edit an existing charge's label, due date, and/or amount.
+async function updateCharge(id, { label, dueDate, amount }){
+  await authReady;
+  const ref = doc(db, "ognc_payments", id);
+  const patch = {};
+  if (dueDate) patch.dueDate = dueDate;
+  patch.label = (label && label.trim()) ? label.trim() : labelFor(dueDate || (await getDoc(ref)).data().dueDate);
+  if (amount !== undefined) patch.amount = Number(amount) || 0;
+  await updateDoc(ref, patch);
+}
 
-  return {
-    getConfig, saveConfig,
-    getPayments, savePayments, ensureSeeded,
-    addNextPeriod, markPaid, undoPayment, deletePeriod,
-    computeStats, formatMoney, formatDate,
-  };
-})();
+async function deleteCharge(id){
+  await authReady;
+  await deleteDoc(doc(db, "ognc_payments", id));
+}
+
+async function markPaid(id, { method = "", paidDate = null } = {}){
+  await authReady;
+  const cfg = await getConfig();
+  const ref = doc(db, "ognc_payments", id);
+  const snap = await getDoc(ref);
+  if (!snap.exists()) return;
+  const record = snap.data();
+
+  const paid = paidDate || new Date().toISOString().slice(0,10);
+  const late = new Date(paid) > new Date(record.dueDate + "T23:59:59");
+
+  await updateDoc(ref, {
+    status: late ? "late" : "paid",
+    paidDate: paid,
+    method: method || record.method || "Confirmed in person",
+    confirmedBy: cfg.landlordName,
+  });
+}
+
+async function undoPayment(id){
+  await authReady;
+  const ref = doc(db, "ognc_payments", id);
+  await updateDoc(ref, {
+    status: "pending",
+    paidDate: null,
+    method: "",
+    confirmedBy: "",
+  });
+}
+
+/* -------------------------------- stats ---------------------------------- */
+
+function computeStats(payments){
+  const settled = payments.filter(p => p.status === "paid" || p.status === "late");
+  const totalPaid = settled.reduce((sum, p) => sum + Number(p.amount || 0), 0);
+  const onTime = settled.filter(p => p.status === "paid").length;
+  const onTimeRate = settled.length ? Math.round((onTime / settled.length) * 100) : 100;
+  const pendingCount = payments.filter(p => p.status === "pending").length;
+  return { totalPaid, onTimeRate, settledCount: settled.length, pendingCount };
+}
+
+function formatMoney(n){
+  return "$" + Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function formatDate(iso){
+  if (!iso) return "N/A";
+  const [y,m,d] = iso.split("-").map(Number);
+  const dt = new Date(y, m-1, d);
+  return dt.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+}
+
+export const OGNC = {
+  getConfig, saveConfig, subscribeConfig,
+  getPayments, subscribePayments,
+  addCharge, addNextPeriod, updateCharge, deleteCharge,
+  markPaid, undoPayment,
+  computeStats, formatMoney, formatDate,
+};
+
+// Also expose globally for convenience / console debugging.
+window.OGNC = OGNC;

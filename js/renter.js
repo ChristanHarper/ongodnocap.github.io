@@ -1,5 +1,5 @@
 /* ==========================================================================
-   ON GOD NO CAPITAL INVESTMENTS — tenant portal logic (Firestore)
+   ON GOD NO CAPITAL INVESTMENTS. Tenant portal logic. Firestore.
    ========================================================================== */
 
 import { OGNC } from "./data.js";
@@ -37,17 +37,17 @@ gateForm.addEventListener("submit", async (e) => {
   const err = document.getElementById("gate-error");
   err.textContent = "";
   gateSubmitBtn.disabled = true;
-  gateSubmitBtn.textContent = "Checking…";
+  gateSubmitBtn.textContent = "Checking";
   try {
     const cfg = await OGNC.getConfig();
     if (val === cfg.renterPassword) {
       window.OGNC_AUTH.setRenter(true);
       unlock();
     } else {
-      err.textContent = "That's not it. Try again.";
+      err.textContent = "That is not correct. Try again.";
     }
   } catch (e2) {
-    err.textContent = "Couldn't reach the server. Check your connection and try again.";
+    err.textContent = "Could not reach the server. Check your connection and try again.";
   } finally {
     gateSubmitBtn.disabled = false;
     gateSubmitBtn.textContent = "View My History";
@@ -84,8 +84,8 @@ function renderLedger(payments){
       <td>${OGNC.formatDate(p.dueDate)}</td>
       <td>${OGNC.formatMoney(p.amount)}</td>
       <td>${statusPill(p.status)}</td>
-      <td>${p.paidDate ? OGNC.formatDate(p.paidDate) : "—"}</td>
-      <td>${p.confirmedBy || "—"}</td>
+      <td>${p.paidDate ? OGNC.formatDate(p.paidDate) : "N/A"}</td>
+      <td>${p.confirmedBy || "N/A"}</td>
     </tr>
   `).join("");
 
@@ -103,7 +103,7 @@ function renderLedger(payments){
 }
 
 function render(){
-  if (!latestConfig || !latestPayments) return; // wait until both have loaded once
+  if (!latestConfig || !latestPayments) return;
   const cfg = latestConfig;
   const payments = latestPayments;
   const stats = OGNC.computeStats(payments);
