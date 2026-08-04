@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rental Portal — On God No Capital Investments</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+  <div class="frame">
+    <div class="brand">
+      <svg class="seal" width="40" height="40" viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="46" stroke="#c9a227" stroke-width="1.5"/>
+        <circle cx="50" cy="50" r="38" stroke="#c9a227" stroke-width="1"/>
+        <text x="50" y="57" text-anchor="middle" font-family="Playfair Display, serif" font-weight="700" font-size="24" fill="#e8c766">OG</text>
+        <rect x="46" y="10" width="8" height="8" transform="rotate(45 50 14)" fill="#7a0c0c"/>
+        <rect x="46" y="82" width="8" height="8" transform="rotate(45 50 86)" fill="#7a0c0c"/>
+      </svg>
+      <div class="brand-name">On God No Capital<small>A Private Residential Capital Group</small></div>
+    </div>
+    <nav class="site-nav">
+      <a href="index.html">Home</a>
+      <a href="index.html#divisions">Divisions</a>
+      <a href="portal.html" class="active">Rental Portal</a>
+    </nav>
+  </div>
+</header>
+
+<main class="portal-wrap">
+  <div class="frame">
+    <div class="portal-head">
+      <span class="eyebrow">Investor &amp; Tenant Relations</span>
+      <h2 style="font-size: 34px; margin-top: 12px;">Choose your access</h2>
+      <p style="color: var(--ivory-dim); font-size: 18px; margin-top: 12px;">
+        Administrators confirm what's been paid. Tenants review their own history.
+      </p>
+    </div>
+
+    <div class="portal-grid">
+      <div class="portal-col portal-col--admin">
+        <span class="eyebrow">Firm Access</span>
+        <h3>Administrator</h3>
+        <p class="desc">For Brandon. Confirm rent received, manage the ledger, keep the firm running.</p>
+        <form id="admin-form" autocomplete="off">
+          <div class="field">
+            <label for="admin-pass">Administrator password</label>
+            <input type="password" id="admin-pass" placeholder="••••••••" required>
+          </div>
+          <div class="form-error" id="admin-error"></div>
+          <button type="submit" class="btn">Enter Console</button>
+        </form>
+      </div>
+
+      <div class="portal-col portal-col--tenant">
+        <span class="eyebrow">Tenant Access</span>
+        <h3>Renter</h3>
+        <p class="desc">Review your full payment history and print a clean record any time you need one.</p>
+        <form id="renter-form" autocomplete="off">
+          <div class="field">
+            <label for="renter-pass">Tenant password</label>
+            <input type="password" id="renter-pass" placeholder="••••••••" required>
+          </div>
+          <div class="form-error" id="renter-error"></div>
+          <button type="submit" class="btn btn--blood">View Payment History</button>
+        </form>
+      </div>
+    </div>
+
+    <p class="small-caps-note" style="text-align:center; margin-top: 28px;">
+      First time here? Passwords are set up by the administrator — see the README in the project
+      repository for the defaults.
+    </p>
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="frame">
+    <div class="footer-note">
+      On God No Capital Investments is not a registered investment advisor, broker-dealer, bank,
+      or landlord‑tenant attorney. It is one guy (Brandon) renting a room to his friend.
+    </div>
+    <div class="footer-mark">Est. on a handshake, not a filing.</div>
+  </div>
+</footer>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script>
+  const cfg = OGNC.getConfig();
+
+  document.getElementById("admin-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const val = document.getElementById("admin-pass").value;
+    const err = document.getElementById("admin-error");
+    if (val === cfg.adminPassword) {
+      OGNC_AUTH.setAdmin(true);
+      window.location.href = "admin.html";
+    } else {
+      err.textContent = "That's not it. Try again.";
+    }
+  });
+
+  document.getElementById("renter-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const val = document.getElementById("renter-pass").value;
+    const err = document.getElementById("renter-error");
+    if (val === cfg.renterPassword) {
+      OGNC_AUTH.setRenter(true);
+      window.location.href = "renter.html";
+    } else {
+      err.textContent = "That's not it. Try again.";
+    }
+  });
+</script>
+
+</body>
+</html>

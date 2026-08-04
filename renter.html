@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tenant Portal — On God No Capital Investments</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- login gate, shown until the tenant password is entered this session -->
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <svg class="seal" width="66" height="66" viewBox="0 0 100 100" fill="none">
+      <circle cx="50" cy="50" r="46" stroke="#c9a227" stroke-width="1.25"/>
+      <circle cx="50" cy="50" r="38" stroke="#c9a227" stroke-width="0.75"/>
+      <text x="50" y="45" text-anchor="middle" font-family="Playfair Display, serif" font-weight="700" font-size="16" fill="#e8c766" letter-spacing="2">OGNC</text>
+      <text x="50" y="61" text-anchor="middle" font-family="Courier Prime, monospace" font-size="6" letter-spacing="1.5" fill="#a89c86">TENANT ACCESS</text>
+    </svg>
+    <h2>Tenant Portal</h2>
+    <p class="desc">Enter your tenant password to view your payment history.</p>
+    <form id="gate-form" autocomplete="off">
+      <div class="field">
+        <label for="gate-pass">Tenant password</label>
+        <input type="password" id="gate-pass" placeholder="••••••••" required>
+      </div>
+      <div class="form-error" id="gate-error"></div>
+      <button type="submit" class="btn btn--blood">View My History</button>
+    </form>
+    <a href="portal.html" class="gate-back">← Back to portal</a>
+  </div>
+</div>
+
+<div id="app" style="display:none;">
+
+<header class="site-header">
+  <div class="frame">
+    <div class="brand">
+      <svg class="seal" width="40" height="40" viewBox="0 0 100 100" fill="none">
+        <circle cx="50" cy="50" r="46" stroke="#c9a227" stroke-width="1.5"/>
+        <circle cx="50" cy="50" r="38" stroke="#c9a227" stroke-width="1"/>
+        <text x="50" y="57" text-anchor="middle" font-family="Playfair Display, serif" font-weight="700" font-size="24" fill="#e8c766">OG</text>
+        <rect x="46" y="10" width="8" height="8" transform="rotate(45 50 14)" fill="#7a0c0c"/>
+        <rect x="46" y="82" width="8" height="8" transform="rotate(45 50 86)" fill="#7a0c0c"/>
+      </svg>
+      <div class="brand-name">On God No Capital<small>A Private Residential Capital Group</small></div>
+    </div>
+    <nav class="site-nav">
+      <a href="index.html">Home</a>
+      <a href="portal.html">Portal</a>
+      <a href="#" id="logout-link">Log Out</a>
+    </nav>
+  </div>
+</header>
+
+<main class="dash">
+  <div class="frame">
+
+    <div class="dash-top">
+      <div>
+        <span class="eyebrow">Tenant Portal</span>
+        <h1 id="welcome-heading">Payment History</h1>
+      </div>
+      <div class="dash-actions">
+        <button class="btn" id="print-btn">Print Payment History</button>
+      </div>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat">
+        <span class="eyebrow">Total Paid to Date</span>
+        <div class="value" id="stat-total">$0.00</div>
+      </div>
+      <div class="stat">
+        <span class="eyebrow">On-Time Rate</span>
+        <div class="value" id="stat-ontime">100%</div>
+      </div>
+      <div class="stat">
+        <span class="eyebrow">Periods on Record</span>
+        <div class="value blood" id="stat-count">0</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2 id="ledger-title">Full Payment History</h2>
+        <span class="small-caps-note" id="printed-note"></span>
+      </div>
+      <div id="ledger-wrap">
+        <!-- table injected by js -->
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer class="site-footer">
+  <div class="frame">
+    <div class="footer-note">
+      This record is generated from the administrator's ledger and reflects payments confirmed
+      by the landlord. Use "Print Payment History" for a clean copy you can hand to a future
+      landlord, property manager, or curious parent.
+    </div>
+    <div class="footer-mark">Est. on a handshake, not a filing.</div>
+  </div>
+</footer>
+
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/app.js"></script>
+<script src="js/renter.js"></script>
+</body>
+</html>
