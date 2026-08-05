@@ -16,6 +16,24 @@ let unsubPayments = null;
 
 let editingId = null;
 let addingNew = false;
+let confirmingId = null;
+
+const PAYMENT_METHODS = ["Cash", "Venmo", "Cash App", "Zelle", "Check", "Bank Transfer", "Other"];
+
+const MONTHS = ["January","February","March","April","May","June","July",
+  "August","September","October","November","December"];
+
+function labelForDate(iso){
+  if (!iso) return "";
+  const [y, m] = iso.split("-").map(Number);
+  return `${MONTHS[m-1]} ${y}`;
+}
+
+function methodOptions(selected){
+  return PAYMENT_METHODS.map(m =>
+    `<option value="${m}"${m === selected ? " selected" : ""}>${m}</option>`
+  ).join("");
+}
 
 function unlock(){
   gate.style.display = "none";
@@ -77,6 +95,7 @@ document.getElementById("quick-add-btn").addEventListener("click", async (e) => 
 
 document.getElementById("custom-add-btn").addEventListener("click", () => {
   editingId = null;
+  confirmingId = null;
   addingNew = true;
   render();
 });
@@ -132,10 +151,34 @@ function displayRow(p){
   `;
 }
 
+// Shown when confirming a pending charge as paid: lets the admin see and set
+// the actual paid date (this is what determines on-time vs. late, so it
+// should never be a silent, invisible default) and pick a method from a
+// fixed list instead of typing free text.
+function confirmRow(p){
+  const today = new Date().toISOString().slice(0,10);
+  return `
+    <tr>
+      <td>${p.label}</td>
+      <td>${OGNC.formatDate(p.dueDate)}</td>
+      <td>${OGNC.formatMoney(p.amount)}</td>
+      <td><span class="pill pill--pending">Pending</span></td>
+      <td><input type="date" id="confirm-date-${p.id}" value="${today}"></td>
+      <td><select id="confirm-method-${p.id}">${methodOptions("Cash")}</select></td>
+      <td>
+        <div class="row-actions">
+          <button class="row-btn" data-save-confirm="${p.id}">Confirm</button>
+          <button class="row-btn row-btn--ghost" data-cancel-confirm="1">Cancel</button>
+        </div>
+      </td>
+    </tr>
+  `;
+}
+
 function editRow(p){
   return `
     <tr>
-      <td><input type="text" id="edit-label-${p.id}" value="${p.label.replace(/"/g,'&quot;')}"></td>
+      <td><span id="edit-periodlabel-${p.id}">${p.label}</span></td>
       <td><input type="date" id="edit-due-${p.id}" value="${p.dueDate}"></td>
       <td><input type="number" id="edit-amount-${p.id}" value="${p.amount}" min="0" step="1"></td>
       <td>${statusPill(p.status)}</td>
@@ -155,7 +198,7 @@ function addRow(cfg){
   const today = new Date().toISOString().slice(0,10);
   return `
     <tr>
-      <td><input type="text" id="new-label" placeholder="Optional"></td>
+      <td><span id="new-periodlabel">${labelForDate(today)}</span></td>
       <td><input type="date" id="new-due" value="${today}"></td>
       <td><input type="number" id="new-amount" value="${cfg ? cfg.rentAmount : 0}" min="0" step="1"></td>
       <td><span class="pill pill--pending">Pending</span></td>
@@ -182,7 +225,9 @@ function renderLedger(payments, cfg){
   const rows = [];
   if (addingNew) rows.push(addRow(cfg));
   payments.forEach(p => {
-    rows.push(p.id === editingId ? editRow(p) : displayRow(p));
+    if (p.id === editingId) rows.push(editRow(p));
+    else if (p.id === confirmingId) rows.push(confirmRow(p));
+    else rows.push(displayRow(p));
   });
 
   wrap.innerHTML = `
@@ -197,18 +242,51 @@ function renderLedger(payments, cfg){
     </table>
   `;
 
+  // Live-update the auto-derived period label as the due date changes.
+  const editDue = editingId && document.getElementById(`edit-due-${editingId}`);
+  if (editDue) {
+    editDue.addEventListener("input", () => {
+      document.getElementById(`edit-periodlabel-${editingId}`).textContent = labelForDate(editDue.value);
+    });
+  }
+  const newDue = document.getElementById("new-due");
+  if (newDue) {
+    newDue.addEventListener("input", () => {
+      document.getElementById("new-periodlabel").textContent = labelForDate(newDue.value);
+    });
+  }
+
   wrap.querySelectorAll("[data-confirm]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      editingId = null;
+      addingNew = false;
+      confirmingId = btn.getAttribute("data-confirm");
+      render();
+    });
+  });
+
+  wrap.querySelectorAll("[data-cancel-confirm]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      confirmingId = null;
+      render();
+    });
+  });
+
+  wrap.querySelectorAll("[data-save-confirm]").forEach(btn => {
     btn.addEventListener("click", async () => {
-      const id = btn.getAttribute("data-confirm");
-      const method = window.prompt("How was this paid? For example, Cash App, Venmo, or cash.", "Cash App");
-      if (method === null) return;
+      const id = btn.getAttribute("data-save-confirm");
+      const paidDate = document.getElementById(`confirm-date-${id}`).value;
+      const method = document.getElementById(`confirm-method-${id}`).value;
+      if (!paidDate) { alert("A paid date is required."); return; }
       btn.disabled = true;
       btn.textContent = "Confirming";
       try {
-        await OGNC.markPaid(id, { method: method.trim() || "Confirmed in person" });
+        await OGNC.markPaid(id, { method, paidDate });
+        confirmingId = null;
+        render();
       } catch (e) {
         btn.disabled = false;
-        btn.textContent = "Confirm Paid";
+        btn.textContent = "Confirm";
         alert("Could not save that. Check your connection and try again.");
       }
     });
@@ -232,6 +310,7 @@ function renderLedger(payments, cfg){
   wrap.querySelectorAll("[data-edit]").forEach(btn => {
     btn.addEventListener("click", () => {
       addingNew = false;
+      confirmingId = null;
       editingId = btn.getAttribute("data-edit");
       render();
     });
@@ -262,14 +341,13 @@ function renderLedger(payments, cfg){
   wrap.querySelectorAll("[data-save-edit]").forEach(btn => {
     btn.addEventListener("click", async () => {
       const id = btn.getAttribute("data-save-edit");
-      const label = document.getElementById(`edit-label-${id}`).value;
       const dueDate = document.getElementById(`edit-due-${id}`).value;
       const amount = document.getElementById(`edit-amount-${id}`).value;
       if (!dueDate) { alert("A due date is required."); return; }
       btn.disabled = true;
       btn.textContent = "Saving";
       try {
-        await OGNC.updateCharge(id, { label, dueDate, amount });
+        await OGNC.updateCharge(id, { dueDate, amount });
         editingId = null;
         render();
       } catch (e) {
@@ -289,14 +367,13 @@ function renderLedger(payments, cfg){
 
   wrap.querySelectorAll("[data-save-new]").forEach(btn => {
     btn.addEventListener("click", async () => {
-      const label = document.getElementById("new-label").value;
       const dueDate = document.getElementById("new-due").value;
       const amount = document.getElementById("new-amount").value;
       if (!dueDate) { alert("A due date is required."); return; }
       btn.disabled = true;
       btn.textContent = "Saving";
       try {
-        await OGNC.addCharge({ label, dueDate, amount });
+        await OGNC.addCharge({ dueDate, amount });
         addingNew = false;
         render();
       } catch (e) {

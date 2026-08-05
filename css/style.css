@@ -537,7 +537,7 @@ table.ledger td{
 table.ledger tr:last-child td{ border-bottom: none; }
 table.ledger tbody tr:hover{ background: rgba(201,162,39,0.03); }
 
-table.ledger input{
+table.ledger input, table.ledger select{
   width: 100%;
   background: var(--void-2);
   border: 1px solid var(--line);
@@ -547,7 +547,7 @@ table.ledger input{
   padding: 7px 9px;
   outline: none;
 }
-table.ledger input:focus{ border-color: var(--gold-bright); }
+table.ledger input:focus, table.ledger select:focus{ border-color: var(--gold-bright); }
 
 .row-actions{ display: flex; gap: 8px; flex-wrap: wrap; }
 

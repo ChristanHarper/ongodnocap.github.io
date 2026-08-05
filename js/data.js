@@ -23,6 +23,9 @@ const DEFAULT_CONFIG = {
   adminPassword: "scarface",
   renterPassword: "nocap",
   landlordName: "The Administrator",
+  // Tracks whether demo charges have ever been seeded, so deleting every
+  // charge later leaves the ledger genuinely empty instead of refilling it.
+  seeded: false,
 };
 
 const MONTHS = ["January","February","March","April","May","June","July",
@@ -119,9 +122,13 @@ async function getPayments(){
   const snap = await getDocs(query(PAYMENTS_COL, orderBy("dueDate", "desc")));
   if (snap.empty) {
     const cfg = await getConfig();
-    await seedDemoPayments(cfg);
-    const reSnap = await getDocs(query(PAYMENTS_COL, orderBy("dueDate", "desc")));
-    return reSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    if (!cfg.seeded) {
+      await seedDemoPayments(cfg);
+      await saveConfig({ seeded: true });
+      const reSnap = await getDocs(query(PAYMENTS_COL, orderBy("dueDate", "desc")));
+      return reSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+    }
+    return [];
   }
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
@@ -132,12 +139,20 @@ function subscribePayments(callback){
   authReady.then(() => {
     const q = query(PAYMENTS_COL, orderBy("dueDate", "desc"));
     unsub = onSnapshot(q, async (snap) => {
-      if (snap.empty && !seeding) {
-        seeding = true;
+      if (snap.empty) {
+        if (seeding) return; // seed write already in flight, wait for the next snapshot
         const cfg = await getConfig();
-        await seedDemoPayments(cfg);
-        seeding = false;
-        return; // triggers this listener again with the seeded docs
+        if (!cfg.seeded) {
+          seeding = true;
+          await seedDemoPayments(cfg);
+          await saveConfig({ seeded: true });
+          seeding = false;
+          return; // triggers this listener again with the seeded docs
+        }
+        // Already seeded once before; genuinely empty now because every
+        // charge was deleted on purpose. Don't refill it.
+        callback([]);
+        return;
       }
       callback(snap.docs.map(d => ({ id: d.id, ...d.data() })));
     });
@@ -147,11 +162,12 @@ function subscribePayments(callback){
 
 // Add a charge with any due date and amount. This is the general-purpose
 // entry point; addNextPeriod() below is just a convenience wrapper around it.
-async function addCharge({ label, dueDate, amount }){
+// The period label is always derived from the due date, never entered by hand.
+async function addCharge({ dueDate, amount }){
   await authReady;
   const id = uid();
   await setDoc(doc(db, "ognc_payments", id), {
-    label: label && label.trim() ? label.trim() : labelFor(dueDate),
+    label: labelFor(dueDate),
     dueDate,
     amount: Number(amount) || 0,
     status: "pending",
@@ -181,16 +197,19 @@ async function addNextPeriod(){
     month = d.getMonth();
   }
   const dueDate = dueDateFor(year, month, cfg.dueDay);
-  await addCharge({ label: labelFor(dueDate), dueDate, amount: cfg.rentAmount });
+  await addCharge({ dueDate, amount: cfg.rentAmount });
 }
 
-// Edit an existing charge's label, due date, and/or amount.
-async function updateCharge(id, { label, dueDate, amount }){
+// Edit an existing charge's due date and/or amount. The period label always
+// tracks the due date and is never entered by hand.
+async function updateCharge(id, { dueDate, amount }){
   await authReady;
   const ref = doc(db, "ognc_payments", id);
   const patch = {};
-  if (dueDate) patch.dueDate = dueDate;
-  patch.label = (label && label.trim()) ? label.trim() : labelFor(dueDate || (await getDoc(ref)).data().dueDate);
+  if (dueDate) {
+    patch.dueDate = dueDate;
+    patch.label = labelFor(dueDate);
+  }
   if (amount !== undefined) patch.amount = Number(amount) || 0;
   await updateDoc(ref, patch);
 }
