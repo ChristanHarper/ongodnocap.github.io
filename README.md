@@ -38,18 +38,24 @@ Worth knowing:
 ## What's in the box
 
 ```
-index.html             Home page, the firm overview (served at /)
+index.html             Home page, the firm overview (served at /), gated by an age check
+juice-box/index.html    Joke landing page for visitors who say they're under 21 (served at /juice-box/)
 portal/index.html       Choose Administrator or Tenant access (served at /portal/)
 admin/index.html          Administrator console: ledger, add/edit/delete charges, settings (served at /admin/)
 renter/index.html          Tenant view: read only history plus Print Payment History (served at /renter/)
 css/style.css         Design system
 js/firebase.js          Firebase app, auth, and Firestore bootstrap plus project config
 js/data.js                Firestore data layer: config doc, payments collection, live subscriptions, full CRUD
-js/app.js                  Session auth helpers, the admin and tenant password gate
+js/app.js                  Session auth helpers: the admin/tenant password gate, plus the homepage age check
+js/age-gate.js               Homepage age-gate logic ("On God" = 21+, cap emoji = redirects to /juice-box/)
 js/admin.js                 Admin page logic, including inline edit and add-charge controls
 js/renter.js                 Tenant page logic
 CNAME                          Custom domain file for GitHub Pages (ongodnocap.com)
 ```
+
+The homepage age gate is a joke, not a real access control: it only remembers you for the
+current browser session (`sessionStorage`), and there is nothing behind it that actually
+needs restricting.
 
 Every page is a folder's `index.html`, so GitHub Pages serves it at the clean URL
 (`/portal/` rather than `/portal.html`) with no extension. All internal links, script

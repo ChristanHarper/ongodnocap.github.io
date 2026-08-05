@@ -8,6 +8,7 @@
 const OGNC_AUTH = (() => {
   const ADMIN_KEY = "ognc_admin_auth";
   const RENTER_KEY = "ognc_renter_auth";
+  const AGE_KEY = "ognc_age_verified";
 
   return {
     isAdmin: () => sessionStorage.getItem(ADMIN_KEY) === "1",
@@ -19,6 +20,11 @@ const OGNC_AUTH = (() => {
     setRenter: (on) => on
       ? sessionStorage.setItem(RENTER_KEY, "1")
       : sessionStorage.removeItem(RENTER_KEY),
+
+    isAgeVerified: () => sessionStorage.getItem(AGE_KEY) === "1",
+    setAgeVerified: (on) => on
+      ? sessionStorage.setItem(AGE_KEY, "1")
+      : sessionStorage.removeItem(AGE_KEY),
   };
 })();
 

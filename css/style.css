@@ -167,6 +167,11 @@ a{ color: inherit; text-decoration: none; }
 .btn--ghost{ border-color: var(--line); color: var(--ivory-dim); }
 .btn--ghost:hover{ background: rgba(30,28,23,0.05); color: var(--ivory); }
 
+.btn--yes{ border-color: #2f6b27; color: #2f6b27; }
+.btn--yes:hover{ background: #2f6b27; color: var(--void); }
+
+.btn--cap{ font-size: 20px; padding: 13px 20px; }
+
 .btn--small{ padding: 9px 16px; font-size: 10.5px; }
 
 .btn:disabled{ opacity: .4; cursor: not-allowed; }
@@ -633,6 +638,12 @@ table.ledger input:focus, table.ledger select:focus{ border-color: var(--gold); 
 .gate-card p.desc{ color: var(--ivory-dim); font-size: 15.5px; margin-bottom: 26px; }
 .gate-card .field{ margin-bottom: 20px; }
 .gate-card .btn{ width: 100%; justify-content: center; }
+
+.age-gate-logo{ font-family: 'Playfair Display', serif; font-weight: 900; font-size: 30px; margin-bottom: 20px; }
+
+.age-gate-actions{ display: flex; gap: 12px; }
+.age-gate-actions .btn{ width: auto; flex: 1; }
+
 .gate-back{
   display: block;
   margin-top: 20px;
