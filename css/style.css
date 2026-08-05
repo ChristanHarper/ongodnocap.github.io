@@ -90,52 +90,6 @@ a{ color: inherit; text-decoration: none; }
   padding: 0 40px;
 }
 
-/* Utility bar: the thin strip at the very top of every page. */
-.utility-bar{
-  border-bottom: 1px solid var(--line-soft);
-  background: var(--void-2);
-  position: relative;
-  z-index: 3;
-}
-
-.utility-bar .frame{
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 9px 40px;
-  font-family: 'Courier Prime', monospace;
-  font-size: 10.5px;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ivory-dim);
-}
-
-.utility-bar .filing-ref{ color: var(--gold-dim); }
-.utility-bar .confidential{ color: var(--ivory-dim); }
-
-/* Filing reference strip: the signature element, repeated under the main
-   nav on every page, styled like a private placement memorandum header. */
-.filing-strip{
-  border-bottom: 1px solid var(--line-soft);
-  position: relative;
-  z-index: 2;
-}
-
-.filing-strip .frame{
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px 24px;
-  padding: 10px 40px;
-  font-family: 'Courier Prime', monospace;
-  font-size: 10.5px;
-  letter-spacing: 0.1em;
-  color: var(--ivory-dim);
-}
-
-.filing-strip strong{ color: var(--gold); font-weight: 400; }
-
 .site-header{
   position: relative;
   z-index: 2;
@@ -712,7 +666,7 @@ table.ledger input:focus{ border-color: var(--gold-bright); }
 /* ------------------------------------ print ------------------------------------- */
 
 @media print{
-  body::before, .utility-bar, .filing-strip, .site-header, .site-footer,
+  body::before, .site-header, .site-footer,
   .dash-actions, .no-print, .row-btn, .row-actions{ display: none !important; }
   body{ background: #fff; color: #111; }
   .frame{ max-width: 100%; padding: 0; }

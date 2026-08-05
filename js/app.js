@@ -1,8 +1,8 @@
 /* ==========================================================================
-   ON GOD NO CAPITAL INVESTMENTS — shared app helpers
+   ON GOD NO CAPITAL INVESTMENTS. Shared app helpers.
    Session auth is intentionally simple: a password checked client-side and
    a flag stored in sessionStorage. This is a private joke site between two
-   friends, not a security product — don't reuse these passwords elsewhere.
+   friends, not a security product. Do not reuse these passwords elsewhere.
    ========================================================================== */
 
 const OGNC_AUTH = (() => {
@@ -21,3 +21,6 @@ const OGNC_AUTH = (() => {
       : sessionStorage.removeItem(RENTER_KEY),
   };
 })();
+
+// Also expose globally so module scripts (admin.js, renter.js) can reach it.
+window.OGNC_AUTH = OGNC_AUTH;
