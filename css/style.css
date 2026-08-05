@@ -139,7 +139,9 @@ a{ color: inherit; text-decoration: none; }
 }
 .site-nav a.cta:hover{ background: var(--gold); color: var(--void); }
 
-.seal{ display: block; flex-shrink: 0; }
+.seal{ display: block; flex-shrink: 0; width: auto; }
+
+.brand .seal{ height: 58px; }
 
 /* --------------------------------- buttons --------------------------------- */
 
@@ -631,7 +633,7 @@ table.ledger input:focus, table.ledger select:focus{ border-color: var(--gold); 
   text-align: center;
 }
 
-.gate-card .seal{ margin: 0 auto 22px; }
+.gate-card .seal{ height: 130px; margin: 0 auto 22px; }
 .gate-card h2{ font-size: 23px; margin-bottom: 6px; }
 .gate-card p.desc{ color: var(--ivory-dim); font-size: 15.5px; margin-bottom: 26px; }
 .gate-card .field{ margin-bottom: 20px; }
