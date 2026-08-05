@@ -183,13 +183,6 @@ a{ color: inherit; text-decoration: none; }
   padding: 76px 0 84px;
 }
 
-.hero .frame{
-  display: grid;
-  grid-template-columns: 1.35fr 1fr;
-  gap: 64px;
-  align-items: start;
-}
-
 .hero .eyebrow{ display: block; margin-bottom: 20px; }
 
 .hero h1{
@@ -216,49 +209,6 @@ a{ color: inherit; text-decoration: none; }
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
-}
-
-/* Fact sheet card beside the hero headline. */
-.fact-sheet{
-  border: 1px solid var(--line-soft);
-  background: var(--panel);
-}
-
-.fact-sheet-head{
-  padding: 16px 22px;
-  border-bottom: 1px solid var(--line-soft);
-  font-family: 'Courier Prime', monospace;
-  font-size: 10.5px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--gold);
-}
-
-.fact-row{
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 14px 22px;
-  border-bottom: 1px solid rgba(201,162,39,0.09);
-  font-size: 15px;
-}
-
-.fact-row:last-child{ border-bottom: none; }
-
-.fact-row dt{
-  font-family: 'Courier Prime', monospace;
-  font-size: 10.5px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ivory-dim);
-  margin: 0;
-}
-
-.fact-row dd{
-  margin: 0;
-  text-align: right;
-  color: var(--ivory);
-  font-weight: 500;
 }
 
 /* ------------------------------- sections --------------------------------- */
@@ -420,6 +370,18 @@ section{ position: relative; z-index: 1; padding: 68px 0; }
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--ivory-dim);
+}
+
+.site-disclaimer{
+  border-top: 1px solid var(--line-soft);
+  padding: 14px 0 20px;
+  font-family: 'Courier Prime', monospace;
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  text-align: center;
+  color: var(--ivory-dim);
+  opacity: 0.7;
 }
 
 /* ------------------------------- portal chooser ------------------------------ */
@@ -682,7 +644,6 @@ table.ledger input:focus, table.ledger select:focus{ border-color: var(--gold-br
 
 @media (max-width: 900px){
   .frame{ padding: 0 22px; }
-  .hero .frame{ grid-template-columns: 1fr; }
   .portal-grid{ grid-template-columns: 1fr; }
   .portal-col + .portal-col{ border-left: none; border-top: 1px solid var(--line-soft); }
   .stat-strip{ grid-template-columns: repeat(2, 1fr); }

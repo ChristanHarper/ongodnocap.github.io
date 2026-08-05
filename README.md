@@ -38,10 +38,10 @@ Worth knowing:
 ## What's in the box
 
 ```
-index.html          Home page, the firm overview
-portal.html          Choose Administrator or Tenant access
-admin.html            Administrator console: ledger, add/edit/delete charges, settings
-renter.html           Tenant view: read only history plus Print Payment History
+index.html             Home page, the firm overview (served at /)
+portal/index.html       Choose Administrator or Tenant access (served at /portal/)
+admin/index.html          Administrator console: ledger, add/edit/delete charges, settings (served at /admin/)
+renter/index.html          Tenant view: read only history plus Print Payment History (served at /renter/)
 css/style.css         Design system
 js/firebase.js          Firebase app, auth, and Firestore bootstrap plus project config
 js/data.js                Firestore data layer: config doc, payments collection, live subscriptions, full CRUD
@@ -50,6 +50,11 @@ js/admin.js                 Admin page logic, including inline edit and add-char
 js/renter.js                 Tenant page logic
 CNAME                          Custom domain file for GitHub Pages (ongodnocap.com)
 ```
+
+Every page is a folder's `index.html`, so GitHub Pages serves it at the clean URL
+(`/portal/` rather than `/portal.html`) with no extension. All internal links, script
+tags, and redirects use root-relative paths (`/css/style.css`, `/portal/`, etc.), so they
+resolve correctly regardless of which folder the current page lives in.
 
 ## Default passwords
 
@@ -86,7 +91,7 @@ things paid:
 - `ognc_payments`, a Firestore collection, one document per charge, holding label, due
   date, amount, status (`pending`, `paid`, or `late`), paid date, method, and who
   confirmed it.
-- Both `admin.html` and `renter.html` hold a live `onSnapshot` subscription to both of the
+- Both `admin/index.html` and `renter/index.html` hold a live `onSnapshot` subscription to both of the
   above. Any write from either portal, or directly in the Firebase console, shows up on
   every open tab within moments.
 - If the collection is empty on first load, the site seeds a few demo months

@@ -59,7 +59,7 @@ document.getElementById("logout-link").addEventListener("click", (e) => {
   window.OGNC_AUTH.setRenter(false);
   if (unsubConfig) unsubConfig();
   if (unsubPayments) unsubPayments();
-  window.location.href = "portal.html";
+  window.location.href = "/portal/";
 });
 
 document.getElementById("print-btn").addEventListener("click", () => {

@@ -80,7 +80,7 @@ document.getElementById("logout-link").addEventListener("click", (e) => {
   window.OGNC_AUTH.setAdmin(false);
   if (unsubConfig) unsubConfig();
   if (unsubPayments) unsubPayments();
-  window.location.href = "portal.html";
+  window.location.href = "/portal/";
 });
 
 document.getElementById("quick-add-btn").addEventListener("click", async (e) => {
