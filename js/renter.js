@@ -1,5 +1,5 @@
 /* ==========================================================================
-   ON GOD NO CAPITAL INVESTMENTS. Tenant portal logic. Firestore.
+   ON GOD NO CAPITAL SOLUTIONS. Tenant portal logic. Firestore.
    ========================================================================== */
 
 import { OGNC } from "./data.js";

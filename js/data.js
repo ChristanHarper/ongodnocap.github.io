@@ -1,5 +1,5 @@
 /* ==========================================================================
-   ON GOD NO CAPITAL INVESTMENTS. Data layer. Firestore-backed.
+   ON GOD NO CAPITAL SOLUTIONS. Data layer. Firestore-backed.
    Config lives at ognc_meta/config. Charges live in the ognc_payments
    collection, one document per billing period. Reads are open. Writes
    require anonymous auth (see firebase.js for what that does and does

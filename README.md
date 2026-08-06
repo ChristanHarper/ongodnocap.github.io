@@ -1,4 +1,4 @@
-# On God No Capital Investments
+# On God No Capital Solutions
 
 A dead serious looking website for a not at all serious situation: one friend renting a
 room to another. Black, gold, and red. The whole site is written and designed like a

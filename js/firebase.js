@@ -1,5 +1,5 @@
 /* ==========================================================================
-   ON GOD NO CAPITAL INVESTMENTS — Firebase bootstrap
+   ON GOD NO CAPITAL SOLUTIONS — Firebase bootstrap
    Loaded as an ES module. Sets up the shared app, auth, and Firestore
    instances used by data.js.
 

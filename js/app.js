@@ -1,5 +1,5 @@
 /* ==========================================================================
-   ON GOD NO CAPITAL INVESTMENTS. Shared app helpers.
+   ON GOD NO CAPITAL SOLUTIONS. Shared app helpers.
    Session auth is intentionally simple: a password checked client-side and
    a flag stored in sessionStorage. This is a private joke site between two
    friends, not a security product. Do not reuse these passwords elsewhere.

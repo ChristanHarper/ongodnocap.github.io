@@ -1,5 +1,5 @@
 /* ==========================================================================
-   ON GOD NO CAPITAL INVESTMENTS. Administrator console logic. Firestore.
+   ON GOD NO CAPITAL SOLUTIONS. Administrator console logic. Firestore.
    ========================================================================== */
 
 import { OGNC } from "./data.js";

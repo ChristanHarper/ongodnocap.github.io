@@ -1,5 +1,5 @@
 /* ==========================================================================
-   ON GOD NO CAPITAL INVESTMENTS. Age gate for the homepage.
+   ON GOD NO CAPITAL SOLUTIONS. Age gate for the homepage.
    ========================================================================== */
 
 (function(){
